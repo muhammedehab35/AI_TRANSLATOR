@@ -11,9 +11,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# URL de l'API Backend (à modifier selon votre déploiement)
-API_BASE_URL = "http://localhost:8000"  # Pour développement local
-# API_BASE_URL = "https://your-backend-url.com"  # Pour production
+# URL de l'API Backend - utilise les secrets Streamlit en production
+API_BASE_URL = st.secrets.get("API_BASE_URL", "http://localhost:8000")
 
 # Styles CSS personnalisés
 st.markdown("""
@@ -52,14 +51,14 @@ st.markdown("""
 def get_supported_languages() -> Dict[str, str]:
     """Récupère les langues supportées depuis l'API"""
     try:
-        response = requests.get(f"{API_BASE_URL}/languages")
+        response = requests.get(f"{API_BASE_URL}/languages", timeout=10)
         if response.status_code == 200:
             return response.json()["languages"]
         else:
             st.error("Erreur lors du chargement des langues supportées")
             return {}
-    except requests.exceptions.RequestException:
-        st.error("Impossible de se connecter au serveur backend")
+    except requests.exceptions.RequestException as e:
+        st.error(f"Impossible de se connecter au serveur backend: {str(e)}")
         return {}
 
 def translate_text(text: str, source_lang: str, target_lang: str, model: str = "gpt-3.5-turbo") -> Dict[str, Any]:
@@ -72,7 +71,7 @@ def translate_text(text: str, source_lang: str, target_lang: str, model: str = "
             "model": model
         }
         
-        response = requests.post(f"{API_BASE_URL}/translate", json=payload)
+        response = requests.post(f"{API_BASE_URL}/translate", json=payload, timeout=30)
         
         if response.status_code == 200:
             return {"success": True, "data": response.json()}
@@ -118,10 +117,11 @@ def main():
             health_response = requests.get(f"{API_BASE_URL}/health", timeout=5)
             if health_response.status_code == 200:
                 st.success("🟢 Backend connecté")
+                st.info(f"URL: {API_BASE_URL}")
             else:
                 st.error("🔴 Backend non disponible")
-        except:
-            st.error("🔴 Impossible de joindre le backend")
+        except Exception as e:
+            st.error(f"🔴 Impossible de joindre le backend: {str(e)}")
     
     # Interface principale
     col1, col2 = st.columns(2)
@@ -131,6 +131,7 @@ def main():
     
     if not languages:
         st.error("Impossible de charger les langues supportées. Vérifiez la connexion au backend.")
+        st.info(f"API URL configurée: {API_BASE_URL}")
         return
     
     # Interface de sélection des langues
