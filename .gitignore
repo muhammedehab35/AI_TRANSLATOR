@@ -1,0 +1,21 @@
+# Variables d'environnement - NE JAMAIS COMMITER
+.env
+*.env
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Environnements virtuels
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

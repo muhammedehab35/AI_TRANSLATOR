@@ -1,0 +1,7 @@
+fastapi==0.115.12
+pydantic==2.11.4
+openai==1.78.1
+uvicorn==0.34.2
+streamlit==1.45.1
+requests==2.32.3
+python-dotenv
